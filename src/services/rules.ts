@@ -28,7 +28,7 @@ export async function setupRules(client: Client<true>) {
 		})
 		.setTitle('Welcome to the Void Presence community')
 		.setDescription(
-			'Advanced Discord Rich Presence manager for Windows.\nCustom profiles, status cycles, images, buttons and automatic media detection.'
+			'Advanced Discord Rich Presence manager.\nCustom profiles, status cycles, images, buttons and automatic media detection.'
 		)
 		.setImage('https://raw.githubusercontent.com/Devollox/void-web/main/public/preview.png')
 		.setFooter({ text: 'voidpresence.com' })
