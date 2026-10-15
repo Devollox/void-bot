@@ -1,4 +1,4 @@
-import { Collection, Client } from 'discord.js'
+import { Collection, ChannelManager, Client } from 'discord.js'
 
 declare module 'discord.js' {
 	interface Client {

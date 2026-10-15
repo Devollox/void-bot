@@ -11,10 +11,6 @@ const client = new Client({
 	],
 })
 
-client.on(Events.ClientReady, () => {
-	console.log(`Logged in as ${client.user?.tag}!`)
-})
-
 client.commands = new Collection()
 
 await loadEvents(client)

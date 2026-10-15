@@ -7,13 +7,9 @@ import { dirname } from 'path'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-export async function loadCommands(
-	client: Client & { commands: Collection<string, any> },
-) {
+export async function loadCommands(client: Client & { commands: Collection<string, any> }) {
 	const commandsPath = path.join(__dirname, '../commands')
-	const files = fs
-		.readdirSync(commandsPath)
-		.filter(f => f.endsWith('.ts') || f.endsWith('.js'))
+	const files = fs.readdirSync(commandsPath).filter(f => f.endsWith('.ts') || f.endsWith('.js'))
 
 	for (const file of files) {
 		const command = (await import(pathToFileURL(path.join(commandsPath, file)).href)).default
