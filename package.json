@@ -1,0 +1,33 @@
+{
+	"name": "void-bot",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"dev": "tsx src/index.ts",
+		"build": "tsc",
+		"start": "node dist/index.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Devollox/void-bot.git"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/Devollox/void-bot/issues"
+	},
+	"homepage": "https://github.com/Devollox/void-bot#readme",
+	"dependencies": {
+		"discord.js": "^14.27.0",
+		"dotenv": "^18.0.8",
+		"node-cron": "^4.6.0"
+	},
+	"devDependencies": {
+		"@types/node": "^26.6.5",
+		"ts-node": "^10.9.2",
+		"tsx": "^4.23.15",
+		"typescript": "^7.0.2"
+	}
+}
