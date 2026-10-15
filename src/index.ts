@@ -1,5 +1,7 @@
 import 'dotenv/config'
-import { Client, Events, GatewayIntentBits } from 'discord.js'
+import { Client, Collection, Events, GatewayIntentBits } from 'discord.js'
+import { loadEvents } from './handlers/events'
+import { loadCommands } from './handlers/commands'
 
 const client = new Client({
 	intents: [
@@ -13,10 +15,9 @@ client.on(Events.ClientReady, () => {
 	console.log(`Logged in as ${client.user?.tag}!`)
 })
 
-client.on(Events.GuildMemberAdd, member => {
-	if (!process.env.START_DISCORD_ROLE) return
+client.commands = new Collection()
 
-	member.roles.add(process.env.START_DISCORD_ROLE).catch(console.error)
-})
+await loadEvents(client)
+await loadCommands(client)
 
 client.login(process.env.DISCORD_TOKEN)
