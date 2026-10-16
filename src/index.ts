@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import { Client, Collection, Events, GatewayIntentBits } from 'discord.js'
+import { Client, GatewayIntentBits } from 'discord.js'
 import { loadEvents } from './handlers/events'
 import { loadCommands } from './handlers/commands'
 
