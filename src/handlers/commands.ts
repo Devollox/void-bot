@@ -11,8 +11,17 @@ export async function loadCommands(client: Client & { commands: Collection<strin
 	const commandsPath = path.join(__dirname, '../commands')
 	const files = fs.readdirSync(commandsPath).filter(f => f.endsWith('.ts') || f.endsWith('.js'))
 
+	if (!client.commands) {
+		client.commands = new Collection()
+	}
+
 	for (const file of files) {
 		const command = (await import(pathToFileURL(path.join(commandsPath, file)).href)).default
+
+		if (!command) {
+			return
+		}
+
 		client.commands.set(command.data.name, command)
 	}
 }

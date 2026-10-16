@@ -13,6 +13,11 @@ export async function loadEvents(client: Client) {
 
 	for (const file of files) {
 		const event = (await import(pathToFileURL(path.join(eventsPath, file)).href)).default
+
+		if (!event) {
+			return
+		}
+
 		client.on(event.name, event.execute)
 	}
 }
