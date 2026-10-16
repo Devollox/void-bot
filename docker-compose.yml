@@ -1,0 +1,11 @@
+services:
+  void-bot:
+    image: void-bot:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    mem_limit: 48m
+    memswap_limit: 48m

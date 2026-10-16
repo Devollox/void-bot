@@ -1,5 +1,5 @@
 import { Events, Message } from 'discord.js'
-import { updateStats } from '../services/stats'
+import { updateStats } from '../services/stats.js'
 
 export default {
 	name: Events.MessageCreate,

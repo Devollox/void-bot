@@ -1,48 +1,70 @@
 import { ButtonInteraction, Events, Interaction } from 'discord.js'
+import { ticketManager } from '../services/tickets.js'
+import { handleAcceptRules } from '../services/rules.js'
 
 export default {
 	name: Events.InteractionCreate,
 	async execute(interaction: Interaction) {
 		if (!interaction.isButton()) return
 
-		if (interaction.customId === 'accept_rules') {
-			await handleAcceptRules(interaction)
-		}
-	},
-}
+		const buttonInteraction = interaction as ButtonInteraction
 
-async function handleAcceptRules(interaction: ButtonInteraction) {
-	const member = interaction.member
-	if (!member || !interaction.guild) {
-		await interaction.reply({ content: 'Could not find your member data.', ephemeral: true })
-		return
-	}
-
-	const startRole = process.env.START_DISCORD_ROLE
-	const userRole = process.env.USERS_DISCORD_ROLE
-
-	if (!startRole || !userRole) {
-		await interaction.reply({ content: 'Role configuration error.', ephemeral: true })
-		return
-	}
-
-	try {
-		const guildMember = await interaction.guild.members.fetch(interaction.user.id)
-
-		if (guildMember.roles.cache.has(userRole)) {
-			await interaction.reply({ content: 'You already have access.', ephemeral: true })
+		if (buttonInteraction.customId === 'accept_rules') {
+			await handleAcceptRules(buttonInteraction)
 			return
 		}
 
-		await guildMember.roles.remove(startRole).catch(() => null)
-		await guildMember.roles.add(userRole)
+		if (buttonInteraction.customId === 'create_ticket') {
+			if (!buttonInteraction.inGuild()) return
 
-		await interaction.reply({
-			content: 'Welcome! You now have access to the server.',
-			ephemeral: true,
-		})
-	} catch (err) {
-		console.error('Error handling accept_rules:', err)
-		await interaction.reply({ content: 'Something went wrong. Please try again.', ephemeral: true })
-	}
+			const member = await buttonInteraction.guild?.members.fetch(buttonInteraction.user.id)
+
+			if (!member) return
+
+			const existingChannelId = ticketManager.getTicketChannelId(member.id)
+
+			if (existingChannelId) {
+				await buttonInteraction.reply({
+					content: `You already have an open ticket: <#${existingChannelId}>`,
+					ephemeral: true,
+				})
+				return
+			}
+
+			await buttonInteraction.deferReply({ ephemeral: true })
+
+			try {
+				const channelId = await ticketManager.createTicket(buttonInteraction.client, member)
+
+				if (!channelId) {
+					await buttonInteraction.editReply({
+						content: 'Failed to create a ticket. Please try again later.',
+					})
+					return
+				}
+
+				await buttonInteraction.editReply({
+					content: `Ticket created: <#${channelId}>`,
+				})
+
+				await ticketManager.sendTicketWelcomeMessage(channelId, member)
+			} catch (error) {
+				console.error('Ticket creation error:', error)
+
+				await buttonInteraction.editReply({
+					content: 'Failed to create a ticket. Please try again later.',
+				})
+			}
+
+			return
+		}
+
+		if (buttonInteraction.customId === 'close_ticket') {
+			await ticketManager.closeTicket(
+				buttonInteraction.client,
+				buttonInteraction.channelId,
+				buttonInteraction.user.id
+			)
+		}
+	},
 }

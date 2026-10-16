@@ -21,6 +21,7 @@
 	},
 	"homepage": "https://github.com/Devollox/void-bot#readme",
 	"dependencies": {
+		"@upstash/redis": "^1.39.0",
 		"discord.js": "^14.27.0",
 		"dotenv": "^18.0.8",
 		"node-cron": "^4.6.0"

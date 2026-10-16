@@ -1,7 +1,7 @@
 import 'dotenv/config'
 import { Client, GatewayIntentBits } from 'discord.js'
-import { loadEvents } from './handlers/events'
-import { loadCommands } from './handlers/commands'
+import { loadEvents } from './handlers/events.js'
+import { loadCommands } from './handlers/commands.js'
 
 const client = new Client({
 	intents: [

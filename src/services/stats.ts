@@ -1,6 +1,6 @@
 import 'dotenv/config'
 import { Client } from 'discord.js'
-import { getGitHubData } from './github'
+import { getGitHubData } from './github.js'
 
 export async function updateStats(client: Client<true>) {
 	if (!process.env.VERSION_VOICE_CHANNEL || !process.env.DOWNLOADS_VOICE_CHANNEL) return
