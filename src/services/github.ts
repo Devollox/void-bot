@@ -18,7 +18,7 @@ interface GitHubRelease {
 async function fetchAllReleases(): Promise<any[]> {
 	const releases: any[] = []
 	let page = 1
-	let token = process.env.GITHUB_TOKEN
+	const TOKEN = process.env.GITHUB_TOKEN
 
 	while (true) {
 		const res = await fetch(
@@ -27,7 +27,7 @@ async function fetchAllReleases(): Promise<any[]> {
 				method: 'GET',
 				headers: {
 					'User-Agent': 'Void-Presence-Updater-Script',
-					Authorization: `Bearer ${token}`,
+					Authorization: `Bearer ${TOKEN}`,
 					Accept: 'application/vnd.github+json',
 					'X-GitHub-Api-Version': '2022-11-28',
 				},
