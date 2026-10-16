@@ -14,6 +14,7 @@ export default {
 		void setupRules(client)
 		void syncRegisteredUsers(client)
 		void ticketManager.setupTicketChannel(client)
+		void ticketManager.loadTickets(client)
 
 		let nextTask: 'stats' | 'tickets' = 'stats'
 

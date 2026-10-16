@@ -21,7 +21,10 @@ export default {
 
 			if (!member) return
 
-			const existingChannelId = ticketManager.getTicketChannelId(member.id)
+			const existingChannelId = ticketManager.getTicketChannelId(
+				buttonInteraction.guildId,
+				member.id
+			)
 
 			if (existingChannelId) {
 				await buttonInteraction.reply({

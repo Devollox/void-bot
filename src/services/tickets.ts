@@ -9,10 +9,9 @@ import {
 	PermissionFlagsBits,
 	TextChannel,
 } from 'discord.js'
+import { ticketStore } from './database.js'
 
 export class TicketManager {
-	private openTickets: Map<string, string> = new Map()
-
 	async setupTicketChannel(client: Client<true>) {
 		if (!process.env.TICKETS_CHANNEL) return
 
@@ -56,13 +55,26 @@ export class TicketManager {
 		})
 	}
 
+	async loadTickets(client: Client<true>) {
+		await ticketStore.load()
+
+		const guild = client.guilds.cache.first()
+		if (!guild) return
+
+		const channels = await guild.channels.fetch()
+
+		const channelIds = new Set(channels.map(channel => channel?.id).filter(Boolean) as string[])
+
+		await ticketStore.cleanup(channelIds)
+	}
+
 	async createTicket(client: Client<true>, member: GuildMember) {
 		if (!member.guild) return null
 
-		const existingChannelId = this.openTickets.get(member.id)
+		const existing = ticketStore.getOpenTicket(member.guild.id, member.id)
 
-		if (existingChannelId) {
-			return existingChannelId
+		if (existing) {
+			return existing.channelId
 		}
 
 		const modRole = process.env.MOD_DISCORD_ROLE
@@ -100,7 +112,11 @@ export class TicketManager {
 			],
 		})
 
-		this.openTickets.set(member.id, channel.id)
+		await ticketStore.create({
+			guildId: member.guild.id,
+			userId: member.id,
+			channelId: channel.id,
+		})
 
 		// this.updateOpenTicketsChannel(client)
 
@@ -152,11 +168,7 @@ export class TicketManager {
 
 		if (!channel || !(channel instanceof TextChannel)) return
 
-		const userId = [...this.openTickets.entries()].find(([, id]) => id === channelId)?.[0]
-
-		if (userId) {
-			this.openTickets.delete(userId)
-		}
+		await ticketStore.close(channelId)
 
 		const embed = new EmbedBuilder()
 			.setColor(0x111111)
@@ -171,12 +183,12 @@ export class TicketManager {
 		// await this.updateOpenTicketsChannel(client)
 	}
 
-	isOpen(userId: string) {
-		return this.openTickets.has(userId)
+	isOpen(guildId: string, userId: string) {
+		return Boolean(ticketStore.getOpenTicket(guildId, userId))
 	}
 
-	getTicketChannelId(userId: string) {
-		return this.openTickets.get(userId) ?? null
+	getTicketChannelId(guildId: string, userId: string) {
+		return ticketStore.getOpenTicket(guildId, userId)?.channelId ?? null
 	}
 
 	async updateOpenTicketsChannel(client: Client<true>) {
