@@ -11,3 +11,6 @@ services:
       - ./data:/app/data
     mem_limit: 128m
     memswap_limit: 128m
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
