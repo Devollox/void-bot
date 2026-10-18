@@ -1,10 +1,27 @@
-import { ButtonInteraction, Events, Interaction } from 'discord.js'
+import { ButtonInteraction, ChatInputCommandInteraction, Events, Interaction } from 'discord.js'
 import { ticketManager } from '../services/tickets.js'
 import { handleAcceptRules } from '../services/rules.js'
 
 export default {
 	name: Events.InteractionCreate,
 	async execute(interaction: Interaction) {
+		if (interaction.isChatInputCommand()) {
+			const commandInteraction = interaction as ChatInputCommandInteraction
+			const command = (interaction.client as any).commands?.get(commandInteraction.commandName)
+			if (!command) return
+			try {
+				await command.execute(commandInteraction)
+			} catch (error) {
+				console.error(error)
+				if (commandInteraction.deferred || commandInteraction.replied) {
+					await commandInteraction.editReply({ content: 'An error occurred.' })
+				} else {
+					await commandInteraction.reply({ content: 'An error occurred.', ephemeral: true })
+				}
+			}
+			return
+		}
+
 		if (!interaction.isButton()) return
 
 		const buttonInteraction = interaction as ButtonInteraction
