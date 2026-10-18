@@ -80,6 +80,15 @@ export default {
 		}
 
 		if (buttonInteraction.customId === 'close_ticket') {
+			await buttonInteraction.deferReply({ ephemeral: true })
+
+			if (!ticketManager.isTicketChannel(buttonInteraction.channelId)) {
+				await interaction.editReply({ content: 'This channel is not a ticket.' })
+				return
+			}
+
+			await interaction.editReply({ content: 'Closing ticket…' })
+
 			await ticketManager.closeTicket(
 				buttonInteraction.client,
 				buttonInteraction.channelId,
