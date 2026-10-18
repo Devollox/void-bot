@@ -24,7 +24,7 @@ const rest = new REST().setToken(process.env.DISCORD_TOKEN!)
 console.log(`Registering ${commands.length} commands...`)
 
 await rest.put(
-	Routes.applicationGuildCommands(process.env.DISCORD_BOT_ID!, process.env.DISCORD_GUILD_ID!),
+	Routes.applicationCommands(process.env.DISCORD_BOT_ID!),
 	{ body: commands }
 )
 
