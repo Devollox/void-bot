@@ -187,6 +187,10 @@ export class TicketManager {
 		return Boolean(ticketStore.getOpenTicket(guildId, userId))
 	}
 
+	isTicketChannel(channelId: string) {
+		return ticketStore.isTicketChannel(channelId)
+	}
+
 	getTicketChannelId(guildId: string, userId: string) {
 		return ticketStore.getOpenTicket(guildId, userId)?.channelId ?? null
 	}

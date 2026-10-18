@@ -39,6 +39,10 @@ export class TicketStore {
 		)
 	}
 
+	isTicketChannel(channelId: string) {
+		return this.tickets.some(t => t.channelId === channelId && t.status === 'OPEN')
+	}
+
 	async create(ticket: Omit<Ticket, 'status' | 'createdAt'>) {
 		const newTicket: Ticket = {
 			...ticket,

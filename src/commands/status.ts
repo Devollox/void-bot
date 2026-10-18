@@ -1,4 +1,5 @@
 import { EmbedBuilder, SlashCommandBuilder } from 'discord.js'
+import { redis } from '../services/redis.js'
 
 export default {
 	data: new SlashCommandBuilder()
@@ -8,10 +9,12 @@ export default {
 	async execute(interaction: any) {
 		await interaction.deferReply()
 
-		const checkService = async (url: string): Promise<{ ok: boolean; latency: number }> => {
+		const checkWebhook = async (): Promise<{ ok: boolean; latency: number }> => {
 			const start = Date.now()
 			try {
-				const res = await fetch(url, { signal: AbortSignal.timeout(5000) })
+				const res = await fetch('https://webhooks.voidpresence.com/health', {
+					signal: AbortSignal.timeout(5000),
+				})
 				return { ok: res.ok, latency: Date.now() - start }
 			} catch {
 				return { ok: false, latency: -1 }
@@ -20,24 +23,14 @@ export default {
 
 		const checkBot = async (): Promise<{ ok: boolean; latency: number }> => {
 			const start = Date.now()
-			try {
-				const res = await fetch(
-					`https://discord.com/api/v10/guilds/${process.env.DISCORD_GUILD_ID}/members/${process.env.DISCORD_BOT_ID}`,
-					{
-						headers: { Authorization: `Bot ${process.env.DISCORD_TOKEN}` },
-						signal: AbortSignal.timeout(5000),
-					}
-				)
-				return { ok: res.ok, latency: Date.now() - start }
-			} catch {
-				return { ok: false, latency: -1 }
-			}
+			const heartbeat = await redis.get<number>('bot:heartbeat')
+			const latency = Date.now() - start
+			if (!heartbeat) return { ok: false, latency }
+			const age = Date.now() - heartbeat
+			return { ok: age < 5 * 60 * 1000, latency }
 		}
 
-		const [webhook, bot] = await Promise.all([
-			checkService('https://webhooks.voidpresence.com/health'),
-			checkBot(),
-		])
+		const [webhook, bot] = await Promise.all([checkWebhook(), checkBot()])
 
 		const statusLine = (ok: boolean, latency: number) =>
 			ok ? `Operational · ${latency}ms` : 'Down'
