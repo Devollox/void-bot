@@ -4,15 +4,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 5
-        window: 120s
+    restart: unless-stopped
     env_file:
       - .env
     volumes:
       - ./data:/app/data
     mem_limit: 168m
     memswap_limit: 168m
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
