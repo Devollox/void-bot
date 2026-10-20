@@ -18,7 +18,8 @@ let isStarting = false
 
 const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms))
 
-const getErrorMessage = (err: unknown): string => (err instanceof Error ? err.message : String(err))
+export const getErrorMessage = (err: unknown): string =>
+	err instanceof Error ? err.message : String(err)
 
 async function start(): Promise<void> {
 	if (isStarting) return
