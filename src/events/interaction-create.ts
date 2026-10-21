@@ -1,4 +1,10 @@
-import { ButtonInteraction, ChatInputCommandInteraction, Events, Interaction } from 'discord.js'
+import {
+	ButtonInteraction,
+	ChatInputCommandInteraction,
+	Events,
+	Interaction,
+	MessageFlags,
+} from 'discord.js'
 import { ticketManager } from '../services/tickets.js'
 import { handleAcceptRules } from '../services/rules.js'
 
@@ -16,7 +22,10 @@ export default {
 				if (commandInteraction.deferred || commandInteraction.replied) {
 					await commandInteraction.editReply({ content: 'An error occurred.' })
 				} else {
-					await commandInteraction.reply({ content: 'An error occurred.', ephemeral: true })
+					await commandInteraction.reply({
+						content: 'An error occurred.',
+						flags: MessageFlags.Ephemeral,
+					})
 				}
 			}
 			return
@@ -46,12 +55,12 @@ export default {
 			if (existingChannelId) {
 				await buttonInteraction.reply({
 					content: `You already have an open ticket: <#${existingChannelId}>`,
-					ephemeral: true,
+					flags: MessageFlags.Ephemeral,
 				})
 				return
 			}
 
-			await buttonInteraction.deferReply({ ephemeral: true })
+			await buttonInteraction.deferReply({ flags: MessageFlags.Ephemeral })
 
 			try {
 				const channelId = await ticketManager.createTicket(buttonInteraction.client, member)
@@ -80,7 +89,7 @@ export default {
 		}
 
 		if (buttonInteraction.customId === 'close_ticket') {
-			await buttonInteraction.deferReply({ ephemeral: true })
+			await buttonInteraction.deferReply({ flags: MessageFlags.Ephemeral })
 
 			if (!ticketManager.isTicketChannel(buttonInteraction.channelId)) {
 				await interaction.editReply({ content: 'This channel is not a ticket.' })

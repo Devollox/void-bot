@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js'
+import { SlashCommandBuilder, PermissionFlagsBits, MessageFlags } from 'discord.js'
 import { ticketManager } from '../services/tickets.js'
 
 export default {
@@ -8,7 +8,7 @@ export default {
 		.setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels),
 
 	async execute(interaction: any) {
-		await interaction.deferReply({ ephemeral: true })
+		await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 
 		const channelId = interaction.channelId
 

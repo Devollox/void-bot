@@ -5,6 +5,7 @@ import {
 	ButtonStyle,
 	Client,
 	EmbedBuilder,
+	MessageFlags,
 	TextChannel,
 } from 'discord.js'
 
@@ -77,7 +78,10 @@ export async function setupRules(client: Client<true>) {
 export async function handleAcceptRules(interaction: ButtonInteraction) {
 	const member = interaction.member
 	if (!member || !interaction.guild) {
-		await interaction.reply({ content: 'Could not find your member data.', ephemeral: true })
+		await interaction.reply({
+			content: 'Could not find your member data.',
+			flags: MessageFlags.Ephemeral,
+		})
 		return
 	}
 
@@ -85,7 +89,7 @@ export async function handleAcceptRules(interaction: ButtonInteraction) {
 	const userRole = process.env.USERS_DISCORD_ROLE
 
 	if (!startRole || !userRole) {
-		await interaction.reply({ content: 'Role configuration error.', ephemeral: true })
+		await interaction.reply({ content: 'Role configuration error.', flags: MessageFlags.Ephemeral })
 		return
 	}
 
@@ -93,7 +97,10 @@ export async function handleAcceptRules(interaction: ButtonInteraction) {
 		const guildMember = await interaction.guild.members.fetch(interaction.user.id)
 
 		if (guildMember.roles.cache.has(userRole)) {
-			await interaction.reply({ content: 'You already have access.', ephemeral: true })
+			await interaction.reply({
+				content: 'You already have access.',
+				flags: MessageFlags.Ephemeral,
+			})
 			return
 		}
 
@@ -102,10 +109,13 @@ export async function handleAcceptRules(interaction: ButtonInteraction) {
 
 		await interaction.reply({
 			content: 'Welcome! You now have access to the server.',
-			ephemeral: true,
+			flags: MessageFlags.Ephemeral,
 		})
 	} catch (err) {
 		console.error('Error handling accept_rules:', err)
-		await interaction.reply({ content: 'Something went wrong. Please try again.', ephemeral: true })
+		await interaction.reply({
+			content: 'Something went wrong. Please try again.',
+			flags: MessageFlags.Ephemeral,
+		})
 	}
 }
