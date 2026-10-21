@@ -1,7 +1,9 @@
 import 'dotenv/config'
-import { Client, GatewayIntentBits, Events } from 'discord.js'
+import { Client, Events, GatewayIntentBits } from 'discord.js'
 import { loadEvents } from './handlers/events.js'
 import { loadCommands } from './handlers/commands.js'
+import { startBot } from './core/bot.js'
+import { getErrorMessage } from './utils/errors.js'
 
 const client = new Client({
 	intents: [
@@ -11,72 +13,43 @@ const client = new Client({
 	],
 })
 
-const RETRY_DELAYS: readonly number[] = [5000, 15000, 30000, 60000, 120000, 300000]
-
-let attempt = 0
-let isStarting = false
-
-const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms))
-
-export const getErrorMessage = (err: unknown): string =>
-	err instanceof Error ? err.message : String(err)
-
-async function start(): Promise<void> {
-	if (isStarting) return
-	isStarting = true
-
-	try {
-		await loadEvents(client)
-		await loadCommands(client)
-
-		const token = process.env.DISCORD_TOKEN
-		if (!token) {
-			throw new Error('DISCORD_TOKEN is not set in .env')
-		}
-
-		await client.login(token)
-		attempt = 0
-		console.log('[bot] started successfully')
-	} catch (err) {
-		console.error('[bot] startup error:', getErrorMessage(err))
-		await retry('login failed')
-	} finally {
-		isStarting = false
-	}
-}
-
-async function retry(reason: string): Promise<void> {
-	const wait = RETRY_DELAYS[Math.min(attempt, RETRY_DELAYS.length - 1)]
-	attempt++
-	console.error(`[bot] ${reason} — attempt #${attempt} in ${wait / 1000}s`)
-
-	await sleep(wait)
-
-	try {
-		await client.destroy()
-	} catch {}
-
-	start()
-}
-
-client.on(Events.Error, (err: Error) => {
-	console.error('[bot] client error:', err.message)
-	void retry('client error')
+client.once(Events.ClientReady, (readyClient): void => {
+	console.log(`[bot] logged in as ${readyClient.user.tag}`)
 })
 
-client.on(Events.ShardError, (err: Error, shardId: number) => {
-	console.error(`[bot] shard #${shardId} error:`, err.message)
-	void retry('shard error')
+client.on(Events.ShardDisconnect, (...args): void => {
+	const [event, shardId] = args as [unknown, number]
+
+	console.warn(`[bot] shard #${shardId} disconnected:`, getErrorMessage(event))
 })
 
-process.on('unhandledRejection', (reason: unknown) => {
+client.on(Events.ShardReconnecting, (shardId: number): void => {
+	console.warn(`[bot] shard #${shardId} reconnecting`)
+})
+
+client.on(Events.ShardResume, (...args): void => {
+	const [, shardId] = args as [unknown, number]
+
+	console.log(`[bot] shard #${shardId} resumed`)
+})
+
+client.on(Events.ShardError, (error: Error, shardId: number): void => {
+	console.error(`[bot] shard #${shardId} error:`, getErrorMessage(error))
+})
+
+client.on(Events.Error, (error: Error): void => {
+	console.error('[bot] client error:', getErrorMessage(error))
+})
+
+process.on('unhandledRejection', (reason: unknown): void => {
 	console.error('[bot] unhandledRejection:', getErrorMessage(reason))
-	void retry('unhandledRejection')
 })
 
-process.on('uncaughtException', (err: Error) => {
-	console.error('[bot] uncaughtException:', err.message)
-	void retry('uncaughtException')
+process.on('uncaughtException', (error: Error): void => {
+	console.error('[bot] uncaughtException:', getErrorMessage(error))
+	process.exit(1)
 })
 
-start()
+await loadEvents(client)
+await loadCommands(client)
+await startBot(client)
